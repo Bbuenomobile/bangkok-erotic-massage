@@ -11,22 +11,22 @@ export default defineConfig({
     //     // Homepage gets highest priority
     //     if (item.url === 'https://eroticmassagebangkok.club/') {
     //       item.priority = 1.0;
-          item.changefreq = 'daily';
-        }
-        // Individual listing pages
-        else {
-          item.priority = 0.8;
-          item.changefreq = 'weekly';
-        }
-        return item;
-      },
-      // Additional pages if needed
-      customPages: [
-        'https://eroticmassagebangkok.club/',
-      ],
-      // Filter out any unwanted pages
-      filter: (page) => !page.includes('/404'),
-    })
+    //       item.changefreq = 'daily';
+    //     }
+    //     // Individual listing pages
+    //     else {
+    //       item.priority = 0.8;
+    //       item.changefreq = 'weekly';
+    //     }
+    //     return item;
+    //   },
+    //   // Additional pages if needed
+    //   customPages: [
+    //     'https://eroticmassagebangkok.club/',
+    //   ],
+    //   // Filter out any unwanted pages
+    //   filter: (page) => !page.includes('/404'),
+    // })
   ],
   output: 'static',
   build: {
