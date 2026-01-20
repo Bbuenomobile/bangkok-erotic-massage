@@ -1,0 +1,185 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  canonical?: string;
+  image?: string;
+  type?: string;
+  noindex?: boolean;
+}
+
+const { 
+    title, 
+    description, 
+    canonical,
+    image = 'https://erotikmaps.com/images/og-default.jpg',
+    type = 'website',
+    noindex = false
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || '';
+const currentUrl = canonical || Astro.url.href;
+const siteName = 'Bangkok Erotic Massage 🌍';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Robots -->
+    {noindex ? (
+        <meta name="robots" content="noindex, nofollow">
+    ) : (
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    )}
+    
+    <!-- Primary Meta Tags -->
+    <title>{title}</title>
+    <meta name="title" content={title}>
+    <meta name="description" content={description}>
+    <meta name="keywords" content="Bangkok, erotic massage, adult massage, Thailand">
+    <meta name="author" content="ErotikMaps">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={currentUrl}>
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type}>
+    <meta property="og:site_name" content={siteName}>
+    <meta property="og:url" content={currentUrl}>
+    <meta property="og:title" content={title}>
+    <meta property="og:description" content={description}>
+    <meta property="og:image" content={image}>
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content={currentUrl}>
+    <meta name="twitter:title" content={title}>
+    <meta name="twitter:description" content={description}>
+    <meta name="twitter:image" content={image}>
+    
+    <!-- Favicon & PWA -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#e91e63">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://erotikmaps.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- JSON-LD Structured Data - WebSite -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": siteName,
+        "url": siteUrl,
+        "description": description,
+        "publisher": {
+            "@type": "Organization",
+            "name": "ErotikMaps",
+            "url": "https://erotikmaps.com",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://erotikmaps.com/images/logo.png"
+            }
+        },
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": siteUrl + "/?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    })}></script>
+    
+    <style is:global>
+        :root {
+            --primary: #e91e63;
+            --secondary: #9C27B0;
+            --text: #1a1a2e;
+            --text-light: #666;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --border: #e9ecef;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+    </style>
+    
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <a href="/" class="logo">Bangkok Erotic Massage 🌍</a>
+            <nav class="nav">
+                <a href="/">Home</a>
+                <a href="#listings">Listings</a>
+                <a href="#faq">FAQ</a>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        <slot />
+    </main>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <p class="footer-logo">Bangkok Erotic Massage 🌍</p>
+                    <p>&copy; {new Date().getFullYear()} All rights reserved.</p>
+                </div>
+                <div class="footer-links">
+                    <p class="footer-title">Explore ErotikMaps</p>
+                    <nav class="footer-nav">
+                        <a href="https://erotikmaps.com" title="Adult entertainment directory">Main Directory</a>
+                        <a href="https://erotikmaps.com/erotic-massage" title="Erotic massage venues">Erotic Massage</a>
+                        <a href="https://erotikmaps.com/gentlemens-club" title="Gentlemen's clubs">Gentlemen's Clubs</a>
+                        <a href="https://erotikmaps.com/submit-listing" title="Add your venue">Add Your Venue</a>
+                    </nav>
+                </div>
+                <div class="footer-info">
+                    <p class="footer-title">For Venue Owners</p>
+                    <p>Get your venue listed on <a href="https://erotikmaps.com" title="ErotikMaps directory">ErotikMaps</a> and reach thousands of clients. <a href="https://erotikmaps.com/submit-listing" title="Submit listing">Free submission</a> available!</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>Powered by <a href="https://erotikmaps.com" title="ErotikMaps - Adult entertainment directory worldwide">ErotikMaps.com</a> - The #1 adult entertainment directory</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

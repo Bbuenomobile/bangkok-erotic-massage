@@ -1,0 +1,38 @@
+---
+export interface Props {
+    listing: {
+        name: string;
+        slug: string;
+        thumbnail: string;
+        city: string;
+        country: string;
+        country_flag?: string;
+        is_premium?: boolean;
+        is_gold?: boolean;
+    };
+}
+
+const { listing } = Astro.props;
+---
+
+<a href={`/${listing.slug}`} class={`listing-card ${listing.is_gold ? 'is-gold' : ''} ${listing.is_premium ? 'is-premium' : ''}`} title={`View ${listing.name} details`}>
+    <img 
+        src={listing.thumbnail} 
+        alt={`${listing.name} - Erotic massage in Bangkok`}
+        loading="lazy"
+        decoding="async"
+        width="280"
+        height="200"
+    />
+    <div class="listing-card-content">
+        <h3>{listing.name}</h3>
+        <p class="location">
+            {listing.city}, {listing.country}
+            {listing.country_flag && (
+                <img src={listing.country_flag} alt={`${listing.country} flag`} class="flag" width="20" height="15" />
+            )}
+        </p>
+        {listing.is_gold && <span class="badge gold">⭐ Gold</span>}
+        {listing.is_premium && !listing.is_gold && <span class="badge premium">Premium</span>}
+    </div>
+</a>

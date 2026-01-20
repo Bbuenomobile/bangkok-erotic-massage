@@ -1,0 +1,442 @@
+---
+import Base from '../layouts/Base.astro';
+import ListingCard from '../components/ListingCard.astro';
+
+// Safe fetch helper
+async function safeFetch(url: string): Promise<any[]> {
+    try {
+        console.log('[getStaticPaths] Fetching:', url);
+        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) {
+            console.error('[getStaticPaths] API error: ' + res.status);
+            return [];
+        }
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            console.error('[getStaticPaths] Not JSON: ' + ct);
+            return [];
+        }
+        const data = await res.json();
+        return data.data || [];
+    } catch (e) {
+        console.error('[getStaticPaths] Fetch failed:', e);
+        return [];
+    }
+}
+
+export async function getStaticPaths() {
+    const apiUrl = 'https://www.erotikmaps.com/api/v1/satellite/listings?city=bangkok&category=erotic-massage&limit=100';
+    const listings = await safeFetch(apiUrl);
+    
+    if (listings.length === 0) {
+        console.warn('[getStaticPaths] No listings found, returning empty paths');
+        return [];
+    }
+    
+    return listings.map((listing: any, index: number) => ({
+        params: { slug: listing.slug },
+        props: { 
+            listing,
+            allListings: listings,
+            position: index + 1,
+            total: listings.length
+        }
+    }));
+}
+
+const { listing, allListings, position, total } = Astro.props;
+const canonicalUrl = `https://eroticmassagebangkok.club/${listing.slug}`;
+
+// Fetch full listing details with error handling
+let fullListing = listing;
+try {
+    const detailUrl = `https://www.erotikmaps.com/api/v1/satellite/listing/${listing.slug}`;
+    console.log('[listing] Fetching details:', detailUrl);
+    const response = await fetch(detailUrl, { headers: { 'Accept': 'application/json' } });
+    if (response.ok) {
+        const ct = response.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+            const data = await response.json();
+            if (data.success && data.data) {
+                fullListing = { ...listing, ...data.data };
+            }
+        }
+    }
+} catch (error) {
+    console.error('[listing] Failed to fetch details:', error);
+    // Continue with basic listing data
+}
+
+// Get similar listings (excluding current)
+const similarListings = allListings
+    .filter((l: any) => l.slug !== listing.slug)
+    .slice(0, 4);
+
+// Get prev/next for navigation
+const prevListing = position > 1 ? allListings[position - 2] : null;
+const nextListing = position < total ? allListings[position] : null;
+
+// Generate meta description with unique content
+const metaDesc = fullListing.description 
+    ? fullListing.description.replace(/<[^>]*>/g, '').substring(0, 155) + '...'
+    : `Discover ${listing.name}, one of the top Erotic massage venues in Bangkok. Contact info, photos, services & reviews.`;
+---
+
+<Base 
+    title={`${listing.name} - Erotic massage in Bangkok | Bangkok Erotic massage`}
+    description={metaDesc}
+    canonical={canonicalUrl}
+    image={listing.thumbnail}
+    type="business.business"
+>
+    <article class="listing-detail" itemscope itemtype="https://schema.org/LocalBusiness">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList">
+                <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/" itemprop="item"><span itemprop="name">Home</span></a>
+                    <meta itemprop="position" content="1" />
+                </span>
+                &rsaquo;
+                <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <a href="/#all-listings" itemprop="item"><span itemprop="name">Erotic massage</span></a>
+                    <meta itemprop="position" content="2" />
+                </span>
+                &rsaquo;
+                <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+                    <span itemprop="name">{listing.name}</span>
+                    <meta itemprop="position" content="3" />
+                </span>
+            </nav>
+            
+            <!-- Header -->
+            <header class="listing-header">
+                <img 
+                    src={listing.thumbnail} 
+                    alt={`${listing.name} - Erotic massage in Bangkok`}
+                    class="listing-hero-image"
+                    loading="eager"
+                    itemprop="image"
+                />
+                <div class="listing-header-content">
+                    <h1 itemprop="name">{listing.name}</h1>
+                    <p class="location" itemprop="address" itemscope itemtype="https://schema.org/PostalAddress">
+                        <span itemprop="addressLocality">{listing.city}</span>, 
+                        <span itemprop="addressCountry">{listing.country}</span>
+                        {listing.country_flag && <img src={listing.country_flag} alt="" class="flag" />}
+                    </p>
+                    {listing.is_premium && <span class="badge premium">⭐ Premium</span>}
+                    <p class="listing-position">Listing {position} of {total} in Bangkok</p>
+                </div>
+            </header>
+            
+            <!-- Prev/Next Navigation -->
+            <nav class="listing-nav">
+                {prevListing && (
+                    <a href={`/${prevListing.slug}`} class="nav-prev">
+                        &larr; Previous: {prevListing.name}
+                    </a>
+                )}
+                {!prevListing && <span></span>}
+                {nextListing && (
+                    <a href={`/${nextListing.slug}`} class="nav-next">
+                        Next: {nextListing.name} &rarr;
+                    </a>
+                )}
+            </nav>
+            
+            <!-- Content -->
+            <div class="listing-content">
+                <div class="main-content">
+                    <!-- About Section -->
+                    {fullListing.description && (
+                        <section class="section">
+                            <h2>About {listing.name}</h2>
+                            <div itemprop="description" set:html={fullListing.description}></div>
+                        </section>
+                    )}
+                    
+                    <!-- Services Section (if available) -->
+                    {fullListing.services && fullListing.services.length > 0 && (
+                        <section class="section">
+                            <h2>Services Offered</h2>
+                            <ul class="services-list">
+                                {fullListing.services.map((service: string) => (
+                                    <li>{service}</li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+                    
+                    <!-- Gallery -->
+                    {fullListing.gallery && fullListing.gallery.length > 0 && (
+                        <section class="section">
+                            <h2>Photo & Video Gallery</h2>
+                            <p class="gallery-intro">Browse {fullListing.gallery.length} photos and videos from {listing.name}.</p>
+                            <div class="gallery">
+                                {fullListing.gallery.map((item: any, idx: number) => (
+                                    item.type === 'image' ? (
+                                        <img 
+                                            src={item.url} 
+                                            alt={`${listing.name} - Photo ${idx + 1}`}
+                                            loading="lazy" 
+                                        />
+                                    ) : (
+                                        <video 
+                                            src={item.url} 
+                                            controls 
+                                            preload="metadata"
+                                            poster={listing.thumbnail}
+                                        ></video>
+                                    )
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                    
+                    <!-- Why Choose Section - Unique content -->
+                    <section class="section why-choose">
+                        <h2>Why Choose {listing.name}?</h2>
+                        <p>
+                            Looking for quality Erotic massage services in Bangkok? 
+                            {listing.name} is one of the {total} verified establishments we feature in the Bangkok area.
+                            {listing.is_premium ? " As a premium listing, this venue has been verified for quality and reliability." : ""}
+                        </p>
+                        <ul>
+                            <li>✓ Verified Erotic massage establishment</li>
+                            <li>✓ Located in Bangkok, Thailand</li>
+                            <li>✓ Direct contact information available</li>
+                            {fullListing.gallery && fullListing.gallery.length > 0 && (
+                                <li>✓ {fullListing.gallery.length} photos & videos available</li>
+                            )}
+                        </ul>
+                    </section>
+                </div>
+                
+                <aside class="sidebar">
+                    <div class="contact-card">
+                        <h3>📞 Contact {listing.name}</h3>
+                        {fullListing.phone && (
+                            <p>
+                                <strong>Phone:</strong> 
+                                <a href={`tel:${fullListing.phone}`} itemprop="telephone">{fullListing.phone}</a>
+                            </p>
+                        )}
+                        {fullListing.whatsapp && (
+                            <p>
+                                <strong>WhatsApp:</strong> 
+                                <a href={`https://wa.me/${fullListing.whatsapp}`} rel="noopener">{fullListing.whatsapp}</a>
+                            </p>
+                        )}
+                        {fullListing.email && (
+                            <p>
+                                <strong>Email:</strong> 
+                                <a href={`mailto:${fullListing.email}`} itemprop="email">{fullListing.email}</a>
+                            </p>
+                        )}
+                        {fullListing.website && (
+                            <p>
+                                <strong>Website:</strong> 
+                                <a href={fullListing.website} target="_blank" rel="noopener" itemprop="url">{fullListing.website}</a>
+                            </p>
+                        )}
+                        {fullListing.address && (
+                            <p>
+                                <strong>Address:</strong> 
+                                <span itemprop="streetAddress">{fullListing.address}</span>
+                            </p>
+                        )}
+                    </div>
+                    
+                    <div class="view-original">
+                        <a href={listing.url} target="_blank" rel="noopener" class="btn-primary">
+                            View Full Profile on ErotikMaps →
+                        </a>
+                    </div>
+                    
+                    <!-- Quick Links -->
+                    <div class="quick-links">
+                        <h4>Quick Links</h4>
+                        <ul>
+                            <li><a href="/">← All Erotic massage in Bangkok</a></li>
+                            <li><a href="/#faq">Frequently Asked Questions</a></li>
+                            <li><a href="/#premium">Premium Listings</a></li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+            
+            <!-- Similar Listings -->
+            {similarListings.length > 0 && (
+                <section class="similar-listings">
+                    <h2>Similar Erotic massage in Bangkok</h2>
+                    <p>Discover other venues that might interest you:</p>
+                    <div class="listings-grid small">
+                        {similarListings.map((l: any) => (
+                            <ListingCard listing={l} />
+                        ))}
+                    </div>
+                    <p class="view-all">
+                        <a href="/" class="btn-secondary">View All {total} Listings →</a>
+                    </p>
+                </section>
+            )}
+        </div>
+    </article>
+    
+    <!-- Schema.org LocalBusiness -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": listing.name,
+        "image": listing.thumbnail,
+        "url": canonicalUrl,
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Bangkok",
+            "addressCountry": "Thailand"
+        },
+        ...(fullListing.phone && { "telephone": fullListing.phone }),
+        ...(fullListing.email && { "email": fullListing.email }),
+        "priceRange": "$$"
+    })}></script>
+    
+    <!-- Schema.org WebPage -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": `${listing.name} - Erotic massage in Bangkok`,
+        "url": canonicalUrl,
+        "isPartOf": {
+            "@type": "WebSite",
+            "name": "Bangkok Erotic massage",
+            "url": "https://eroticmassagebangkok.club"
+        },
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://eroticmassagebangkok.club"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Erotic massage",
+                    "item": "https://eroticmassagebangkok.club/#all-listings"
+                },
+                {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": listing.name,
+                    "item": canonicalUrl
+                }
+            ]
+        }
+    })}></script>
+</Base>
+
+<style>
+    .listing-position {
+        font-size: 13px;
+        color: var(--text-light);
+        margin-top: 10px;
+    }
+    .listing-nav {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px 0;
+        margin: 15px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+    .listing-nav a {
+        font-size: 14px;
+    }
+    .nav-prev { color: var(--text-light); }
+    .nav-next { color: var(--primary); }
+    .services-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        list-style: none;
+        padding: 0;
+    }
+    .services-list li {
+        background: var(--bg);
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    .gallery-intro {
+        color: var(--text-light);
+        margin-bottom: 15px;
+    }
+    .why-choose ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 15px;
+    }
+    .why-choose li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .quick-links {
+        background: var(--bg);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .quick-links h4 {
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+    .quick-links ul {
+        list-style: none;
+        padding: 0;
+    }
+    .quick-links li {
+        margin-bottom: 10px;
+    }
+    .quick-links a {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+    .quick-links a:hover {
+        color: var(--primary);
+    }
+    .similar-listings {
+        margin-top: 50px;
+        padding-top: 40px;
+        border-top: 2px solid var(--border);
+    }
+    .similar-listings h2 {
+        margin-bottom: 10px;
+    }
+    .similar-listings > p {
+        color: var(--text-light);
+        margin-bottom: 25px;
+    }
+    .listings-grid.small {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    .view-all {
+        text-align: center;
+        margin-top: 30px;
+    }
+    .btn-secondary {
+        display: inline-block;
+        padding: 12px 30px;
+        background: var(--bg);
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    .btn-secondary:hover {
+        background: var(--primary);
+        color: white;
+    }
+</style>

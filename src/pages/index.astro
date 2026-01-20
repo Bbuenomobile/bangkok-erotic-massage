@@ -1,0 +1,386 @@
+---
+import Base from '../layouts/Base.astro';
+import ListingCard from '../components/ListingCard.astro';
+import InternalLinks from '../components/InternalLinks.astro';
+import OwnerCTA from '../components/OwnerCTA.astro';
+import CategoryNav from '../components/CategoryNav.astro';
+
+// Safe fetch helper for build-time API calls
+async function safeFetchJson(url: string): Promise<any[]> {
+    try {
+        console.log('Fetching:', url);
+        const res = await fetch(url, {
+            headers: { 'Accept': 'application/json' },
+            timeout: 30000
+        });
+        
+        if (!res.ok) {
+            console.error('API returned ' + res.status + ': ' + res.statusText);
+            return [];
+        }
+        
+        const ct = res.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+            console.error('Expected JSON but got: ' + ct);
+            return [];
+        }
+        
+        const data = await res.json();
+        return data.data || [];
+    } catch (error) {
+        console.error('Fetch failed:', error);
+        return [];
+    }
+}
+
+// Fetch listings from API at build time
+const apiUrl = 'https://www.erotikmaps.com/api/v1/satellite/listings?city=bangkok&category=erotic-massage&limit=100';
+const listings = await safeFetchJson(apiUrl);
+
+const faq = [{"question":"What is the best Erotic massage in Bangkok?","answer":"<p>The best <strong>erotic massage in Bangkok<\/strong> depends on your vibe, but top picks cluster in Sukhumvit Soi 24\/1 and Nana Plaza. Venues like those offering 'Thai special' packages stand out for their skilled masseuses using coconut oil and rhythmic <em>nuat thai<\/em> techniques amid jasmine-scented rooms. Our 12 verified listings highlight hidden gems with 5-star reviews for discretion and intensity, perfect for first-timers navigating Bangkok's steamy scene. Always check recent guest feedback for the ultimate sensual match.<\/p>"},{"question":"How much does Erotic massage cost in Bangkok?","answer":"<p><strong>Erotic massage in Bangkok<\/strong> typically costs 1,500-3,000 THB ($45-90 USD) for a 60-minute session, including body-to-body slides and happy endings. Premium parlors in Thonglor charge 4,000-7,000 THB ($120-210 USD) for extended 90-minute VIP treatments with toys or duo options. Add 500-1,000 THB tips. Prices are negotiated upfront in Thai baht; ATMs are plentiful, but expect slight tourist upcharges. Bargain politely for the best deals in this value-packed city.<\/p>"},{"question":"Is Erotic massage legal in Thailand?","answer":"<p>Erotic massage in Bangkok operates in a legal gray area. Prostitution is technically illegal under Thailand's 1996 Prevention and Suppression Act, but enforcement is lax, especially in tourist hubs like Sukhumvit and Patpong. Venues providing 'massage plus extras' thrive discreetly with police tolerance via under-table arrangements. Visitors face minimal risks if sticking to reputable spots—our 12 verified listings prioritize safety. Know the culture: discretion is key, and avoid public displays to stay hassle-free in humid Bangkok nights.<\/p>"},{"question":"What are the best areas for Erotic massage in Bangkok?","answer":"<p>The prime areas for <strong>erotic massage Bangkok<\/strong> are Sukhumvit (Soi 23-33), Nana Plaza, and Soi Cowboy, buzzing with neon signs and go-go bars under tropical downpours. Patpong Night Market in Silom offers budget-friendly options amid street vendors hawking grilled skewers. Thonglor provides upscale, discreet parlors for expats. These districts, linked by BTS Skytrain, ensure easy access after spicy tom yum dinners. Our 12 listings pinpoint the safest, most authentic spots away from sketchy alleys.<\/p>"},{"question":"What should I know before visiting a Erotic massage venue in Bangkok?","answer":"<p>Before an <strong>erotic massage in Bangkok<\/strong>, shower upon arrival (mandatory in 35°C heat), negotiate services and price clearly in basic Thai or via translator apps—say <em>'pip special'<\/em> for extras. Dress casually, carry small THB bills, and respect masseuses with smiles and tips. Venues are air-conditioned havens; condom use is standard. Avoid peak rainy season crowds (June-Oct), book via Line app for our 12 listings, and steer clear of street touts for safety in this smile-filled yet cautious city.<\/p>"}];
+const canonicalUrl = 'https://eroticmassagebangkok.club/';
+
+// Split listings for different sections
+const premiumListings = listings.filter((l: any) => l.is_premium);
+const goldListings = listings.filter((l: any) => l.is_gold);
+const regularListings = listings.filter((l: any) => !l.is_premium);
+
+// Get top 5 listings for hero slider (Gold first, then Premium)
+const heroListings = [...goldListings, ...premiumListings.filter((l: any) => !l.is_gold), ...regularListings]
+    .filter((l: any) => l.thumbnail)
+    .slice(0, 5);
+---
+
+<Base 
+    title="Best Erotic Massage Bangkok: Top 12 Venues 2026 Guide"
+    description="Discover the ultimate erotic massage Bangkok experience with our 12 verified venues. Indulge in sensual Thai techniques amid Bangkok&#039;s steamy nights. Book your session now for pure bliss!"
+    canonical={canonicalUrl}
+    image={heroListings.length > 0 ? heroListings[0].thumbnail : 'https://erotikmaps.com/images/og-default.jpg'}
+>
+    <!-- Hero Section with Image Slider -->
+    <section class="hero">
+        {heroListings.length > 1 ? (
+            <div class="hero-slider" id="heroSlider">
+                {heroListings.map((listing: any, index: number) => (
+                    <div class={`hero-slide ${index === 0 ? 'active' : ''}`} style={`background-image: url('${listing.thumbnail}')`}>
+                        <div class="slide-overlay"></div>
+                        <a href={`/${listing.slug}`} class="slide-link" title={listing.name}>
+                            {listing.is_gold && <span class="slide-badge gold">⭐ Gold</span>}
+                            {listing.is_premium && !listing.is_gold && <span class="slide-badge premium">Premium</span>}
+                            <span class="slide-name">{listing.name}</span>
+                        </a>
+                    </div>
+                ))}
+                <div class="slider-dots">
+                    {heroListings.map((_: any, index: number) => (
+                        <button class={`dot ${index === 0 ? 'active' : ''}`} onclick={`goToSlide(${index})`}></button>
+                    ))}
+                </div>
+            </div>
+        ) : (
+            <div class="hero-static"></div>
+        )}
+        <div class="hero-content">
+            <div class="container">
+                <h1>Unveil Sensual Secrets: Premier Erotic Massage in Bangkok</h1>
+                <p class="hero-subtitle">Discover {listings.length} verified Erotic massage venues in Bangkok</p>
+                <div class="hero-stats">
+                    <span class="stat"><strong>{listings.length}</strong> Total Listings</span>
+                    <span class="stat"><strong>{goldListings.length}</strong> Gold Venues</span>
+                    <span class="stat"><strong>{premiumListings.length}</strong> Premium Venues</span>
+                </div>
+                <a href="#all-listings" class="hero-cta">Browse All Listings →</a>
+            </div>
+        </div>
+    </section>
+    
+    <script is:inline>
+    // Simple hero slider
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.slider-dots .dot');
+    
+    function goToSlide(index) {
+        slides[currentSlide]?.classList.remove('active');
+        dots[currentSlide]?.classList.remove('active');
+        currentSlide = index;
+        slides[currentSlide]?.classList.add('active');
+        dots[currentSlide]?.classList.add('active');
+    }
+    
+    // Auto-advance every 5 seconds
+    if (slides.length > 1) {
+        setInterval(() => {
+            goToSlide((currentSlide + 1) % slides.length);
+        }, 5000);
+    }
+    </script>
+    
+    <!-- Quick Navigation -->
+    <nav class="quick-nav">
+        <div class="container">
+            <a href="#premium">Premium Listings</a>
+            <a href="#all-listings">All Listings</a>
+            <a href="#about">About Bangkok</a>
+            <a href="#faq">FAQ</a>
+        </div>
+    </nav>
+    
+    <!-- Intro Section -->
+    <section class="intro" id="about">
+        <div class="container">
+            <h2>About Erotic massage in Bangkok</h2>
+            <Fragment set:html=`<p>Bangkok pulses with an intoxicating blend of ancient Thai traditions and modern hedonism, making it the ultimate destination for <strong>erotic massage in Bangkok</strong>. Nestled along the Chao Phraya River, this city of golden temples and neon-lit streets has long been a magnet for those seeking intimate, body-awakening pleasures. The humid tropical air enhances every touch, turning a simple massage into a symphony of senses infused with lemongrass and jasmine oils.</p><p>What sets <em>erotic massage Bangkok</em> apart is its deep roots in Thai culture's reverence for <em>nuat thai</em>, the traditional art of therapeutic touch, elevated here to erotic heights. Visitors can expect skilled masseuses trained in rhythmic strokes that blend relaxation with arousal, often in dimly lit rooms adorned with silk screens and flickering candles. From Sukhumvit's high-end parlors to the shadowy alleys of Nana Plaza, each venue offers a unique twist on this sensual ritual.</p><p>Bangkok's reputation as Asia's pleasure capital traces back decades, fueled by its thriving sex tourism scene that discreetly integrates erotic services into everyday nightlife. Neighborhoods like Soi Cowboy and Patpong buzz with promise, where Thai hospitality meets uninhibited desire. Safety and discretion are paramount, with many spots catering exclusively to international guests fluent in the art of subtle negotiation.</p><p>Whether you're a first-time explorer or a seasoned devotee, <strong>erotic massage in Bangkok</strong> promises an unforgettable escape. Our curated guide spotlights 12 verified havens, ensuring you find the perfect match for your fantasies amid the city's relentless energy and warm, sticky embrace.</p>
+
+<h2>About Bangkok</h2>
+<p>Bangkok, Thailand's sweltering capital, captivates with its Grand Palace shimmering under relentless tropical sun and the aromatic chaos of Chatuchak Weekend Market. As home to over 10 million souls, it masterfully fuses Theravada Buddhist serenity with electrifying nightlife, where tuk-tuks zip past towering skyscrapers and street food stalls sizzle with pad thai and som tam.</p><p>The city's nightlife thrives in districts like Thonglor and RCA, pulsing with rooftop bars overlooking the skyline, while the Chao Phraya River ferries offer romantic nocturnal cruises. Amid 30°C heat and monsoon rhythms, Bangkok's Thai language echoes with <em>sawasdee</em> greetings, inviting tourists to dive into its cultural tapestry of spirit houses and floating markets.</p><p>For pleasure-seekers, this humid haven delivers non-stop excitement, blending royal history with raw sensuality that keeps visitors returning year after year.</p>
+
+<h2>What to Expect</h2>
+<p>In <strong>erotic massage Bangkok</strong> venues, anticipate a warm welcome with a cold lemongrass towel and iced Thai tea, followed by a private room setup with soft Thai pop music and essential oils. Sessions typically last 60-90 minutes, starting with traditional <em>nuat thai</em> to loosen muscles before transitioning to sensual, full-body caresses that heighten arousal without rushing.</p><p>Prices range from 1,500-4,000 THB (about $45-120 USD) for standard erotic sessions, escalating to 6,000+ THB for VIP experiences with extras. Etiquette demands politeness—use <em>khob khun krap/ka</em> (thank you) generously, tip 500-1,000 THB, and clarify services upfront to avoid misunderstandings in Bangkok's direct negotiation culture.</p><p>Most parlors enforce hygiene with showers before and after, ensuring a clean, discreet encounter tailored to your comfort in this land of smiles.</p>` />
+        </div>
+    </section>
+    
+    <!-- Category Navigation - Browse by massage type -->
+    <CategoryNav city="Bangkok" />
+    
+    <!-- Premium Listings (if any) -->
+    {premiumListings.length > 0 && (
+        <section class="listings premium-section" id="premium">
+            <div class="container">
+                <h2>⭐ Premium Erotic massage in Bangkok</h2>
+                <p class="section-intro">Our highest-rated and most popular venues, handpicked for quality.</p>
+                <div class="listings-grid">
+                    {premiumListings.map((listing: any) => (
+                        <ListingCard listing={listing} />
+                    ))}
+                </div>
+            </div>
+        </section>
+    )}
+    
+    <!-- All Listings Grid -->
+    <section class="listings" id="all-listings">
+        <div class="container">
+            <h2>All Erotic massage Venues in Bangkok</h2>
+            <p class="section-intro">Browse our complete directory of {listings.length} verified venues.</p>
+            <div class="listings-grid">
+                {listings.map((listing: any) => (
+                    <ListingCard listing={listing} />
+                ))}
+            </div>
+            
+            {listings.length === 0 && (
+                <p class="no-listings">No listings found. Check back soon!</p>
+            )}
+        </div>
+    </section>
+    
+    <!-- Internal Links Section -->
+    <InternalLinks city="Bangkok" country="Thailand" category="Erotic massage" />
+    
+    <!-- Owner CTA Section - Encourage venue owners to create listings -->
+    <OwnerCTA city="Bangkok" country="Thailand" category="Erotic massage" />
+    
+    <!-- FAQ Section -->
+    {faq && faq.length > 0 && (
+        <section class="faq" id="faq">
+            <div class="container">
+                <h2>Frequently Asked Questions about Erotic massage in Bangkok</h2>
+                <div class="faq-list">
+                    {faq.map((item: any, index: number) => (
+                        <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                            <h3 itemprop="name">{item.question}</h3>
+                            <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                                <p itemprop="text">{item.answer}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    )}
+    
+    <!-- Bottom Section / Call to Action -->
+    <section class="bottom-content">
+        <div class="container">
+            <h2>Find Your Perfect Erotic massage Experience in Bangkok</h2>
+            <Fragment set:html=`<p>Immerse yourself in the seductive world of <strong>erotic massage in Bangkok</strong> through our exclusive directory of <strong>12 verified listings</strong>. Each venue has been meticulously vetted for quality, safety, and authentic Thai sensuality, from hidden gems in Sukhumvit to opulent spots near Lumphini Park.</p><p>Don't miss the chance to experience Bangkok's unique fusion of tradition and temptation. Whether craving a steamy happy ending or prolonged erotic bliss, these 12 handpicked parlors guarantee satisfaction amid the city's humid nights and fragrant streets.</p><p><strong>Book today</strong> and let Bangkok's expert hands awaken your deepest desires. Contact any of our 12 listings now for an unforgettable journey into Thai erotic artistry—your sensual adventure awaits!</p>` />
+            
+            <div class="cta-box">
+                <h3>Looking for something specific?</h3>
+                <p>Browse through our {listings.length} listings above, or click on any venue to see full details, photos, and contact information.</p>
+                <a href="#all-listings" class="btn-primary">Browse All Listings</a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Individual Listing Links for SEO -->
+    <section class="sitemap-links">
+        <div class="container">
+            <h2>All Erotic massage Venues</h2>
+            <ul class="venue-links">
+                {listings.map((listing: any) => (
+                    <li><a href={`/${listing.slug}`}>{listing.name} - Bangkok</a></li>
+                ))}
+            </ul>
+        </div>
+    </section>
+    
+    <!-- Schema.org - ItemList -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "name": "Best Erotic Massage Bangkok: Top 12 Venues 2026 Guide",
+        "description": "Discover the ultimate erotic massage Bangkok experience with our 12 verified venues. Indulge in sensual Thai techniques amid Bangkok&#039;s steamy nights. Book your session now for pure bliss!",
+        "url": canonicalUrl,
+        "numberOfItems": listings.length,
+        "itemListElement": listings.map((listing: any, index: number) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+                "@type": "LocalBusiness",
+                "name": listing.name,
+                "url": `https://eroticmassagebangkok.club/${listing.slug}`,
+                "image": listing.thumbnail,
+                "address": {
+                    "@type": "PostalAddress",
+                    "addressLocality": "Bangkok",
+                    "addressCountry": "Thailand"
+                }
+            }
+        }))
+    })}></script>
+    
+    <!-- Schema.org - FAQPage -->
+    {faq && faq.length > 0 && (
+        <script type="application/ld+json" set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": faq.map((item: any) => ({
+                "@type": "Question",
+                "name": item.question,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": item.answer
+                }
+            }))
+        })}></script>
+    )}
+    
+    <!-- Schema.org - WebPage -->
+    <script type="application/ld+json" set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "name": "Best Erotic Massage Bangkok: Top 12 Venues 2026 Guide",
+        "description": "Discover the ultimate erotic massage Bangkok experience with our 12 verified venues. Indulge in sensual Thai techniques amid Bangkok&#039;s steamy nights. Book your session now for pure bliss!",
+        "url": canonicalUrl,
+        "isPartOf": {
+            "@type": "WebSite",
+            "name": "Bangkok Erotic Massage 🌍",
+            "url": "https://eroticmassagebangkok.club"
+        },
+        "about": {
+            "@type": "Thing",
+            "name": "Erotic massage in Bangkok"
+        },
+        "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://eroticmassagebangkok.club"
+                }
+            ]
+        }
+    })}></script>
+</Base>
+
+<style>
+    .quick-nav {
+        background: var(--card-bg);
+        border-bottom: 1px solid var(--border);
+        padding: 15px 0;
+        position: sticky;
+        top: 60px;
+        z-index: 90;
+    }
+    .quick-nav .container {
+        display: flex;
+        gap: 25px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .quick-nav a {
+        color: var(--text);
+        font-weight: 500;
+        font-size: 14px;
+    }
+    .quick-nav a:hover {
+        color: var(--primary);
+    }
+    .hero-stats {
+        display: flex;
+        gap: 30px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    .hero-stats .stat {
+        background: rgba(255,255,255,0.15);
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    .section-intro {
+        color: var(--text-light);
+        margin-bottom: 25px;
+    }
+    .premium-section {
+        background: linear-gradient(135deg, #D4AF3710, #F4D03F10);
+    }
+    .cta-box {
+        background: linear-gradient(135deg, var(--primary)10, var(--secondary)10);
+        padding: 30px;
+        border-radius: 12px;
+        margin-top: 30px;
+        text-align: center;
+    }
+    .cta-box h3 {
+        margin-bottom: 10px;
+    }
+    .cta-box p {
+        margin-bottom: 20px;
+        color: var(--text-light);
+    }
+    .sitemap-links {
+        padding: 40px 0;
+        background: var(--bg);
+    }
+    .sitemap-links h2 {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+    .venue-links {
+        column-count: 3;
+        column-gap: 30px;
+        list-style: none;
+        padding: 0;
+    }
+    .venue-links li {
+        margin-bottom: 8px;
+        break-inside: avoid;
+    }
+    .venue-links a {
+        font-size: 13px;
+        color: var(--text-light);
+    }
+    .venue-links a:hover {
+        color: var(--primary);
+    }
+    @media (max-width: 768px) {
+        .venue-links {
+            column-count: 1;
+        }
+    }
+</style>

@@ -1,0 +1,124 @@
+---
+export interface Props {
+    city: string;
+    country: string;
+    category: string;
+}
+
+const { city, country, category } = Astro.props;
+
+// Varied anchor texts for dofollow links to ErotikMaps (SEO diversity)
+const anchorVariations = [
+    { url: 'https://erotikmaps.com', text: 'ErotikMaps - Global Adult Directory', title: 'Visit ErotikMaps main site' },
+    { url: 'https://erotikmaps.com/erotic-massage', text: `erotic massage worldwide`, title: 'Browse all erotic massage venues' },
+    { url: `https://erotikmaps.com/erotic-massage/${country.toLowerCase().replace(/ /g, '-')}`, text: `${category} in ${country}`, title: `All ${category} in ${country}` },
+    { url: 'https://erotikmaps.com/gentlemens-club', text: 'gentlemen\'s clubs directory', title: 'Browse gentlemen\'s clubs' },
+    { url: 'https://erotikmaps.com/swinger-club', text: 'swinger clubs listings', title: 'Browse swinger clubs' },
+];
+---
+
+<section class="internal-links">
+    <div class="container">
+        <h2>Explore More {category} Options</h2>
+        <div class="links-grid">
+            <div class="link-category">
+                <h3>📍 On This Site</h3>
+                <ul>
+                    <li><a href="/">All {category} in {city}</a></li>
+                    <li><a href="/#premium">⭐ Premium Venues</a></li>
+                    <li><a href="/#faq">Frequently Asked Questions</a></li>
+                    <li><a href="/#about">About {city}</a></li>
+                </ul>
+            </div>
+            <div class="link-category">
+                <h3>🌍 Discover More on ErotikMaps</h3>
+                <ul>
+                    {anchorVariations.map((link) => (
+                        <li>
+                            <a href={link.url} title={link.title}>
+                                {link.text}
+                            </a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div class="link-category">
+                <h3>ℹ️ Quick Info</h3>
+                <ul>
+                    <li>📍 Location: {city}, {country}</li>
+                    <li>🔍 Category: {category}</li>
+                    <li>✅ Verified venues only</li>
+                    <li>🆓 Free to browse</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- SEO paragraph with contextual dofollow links -->
+        <div class="seo-text">
+            <p>
+                Looking for more options? <a href="https://erotikmaps.com" title="Adult entertainment directory">ErotikMaps</a> 
+                is the leading directory for adult entertainment venues worldwide. Whether you're searching for 
+                <a href="https://erotikmaps.com/erotic-massage" title="Find erotic massage near you">erotic massage parlors</a>, 
+                <a href="https://erotikmaps.com/gentlemens-club" title="Browse gentlemen's clubs">upscale gentlemen's clubs</a>, 
+                or <a href="https://erotikmaps.com/swinger-club" title="Discover swinger clubs">exclusive swinger clubs</a>, 
+                our comprehensive directory covers venues across Europe and beyond.
+            </p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .internal-links {
+        background: var(--card-bg);
+        padding: 50px 0;
+        border-top: 1px solid var(--border);
+    }
+    .internal-links h2 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 1.5rem;
+    }
+    .links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+    }
+    .link-category h3 {
+        font-size: 1rem;
+        margin-bottom: 15px;
+        color: var(--primary);
+    }
+    .link-category ul {
+        list-style: none;
+        padding: 0;
+    }
+    .link-category li {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+    }
+    .link-category li:last-child {
+        border-bottom: none;
+    }
+    .link-category a {
+        color: var(--text);
+    }
+    .link-category a:hover {
+        color: var(--primary);
+    }
+    .seo-text {
+        margin-top: 40px;
+        padding: 20px;
+        background: var(--bg);
+        border-radius: 8px;
+    }
+    .seo-text p {
+        font-size: 14px;
+        color: var(--text-light);
+        line-height: 1.8;
+    }
+    .seo-text a {
+        color: var(--primary);
+        text-decoration: underline;
+    }
+</style>
