@@ -1,15 +1,16 @@
 import { defineConfig } from 'astro/config';
-import sitemap from '@astrojs/sitemap';
+// import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://eroticmassagebangkok.club',
   integrations: [
-    sitemap({
-      // Customize sitemap entries
-      serialize(item) {
-        // Homepage gets highest priority
-        if (item.url === 'https://eroticmassagebangkok.club/') {
-          item.priority = 1.0;
+    // Temporarily disabled sitemap due to plugin bug with dynamic routes
+    // sitemap({
+    //   // Customize sitemap entries
+    //   serialize(item) {
+    //     // Homepage gets highest priority
+    //     if (item.url === 'https://eroticmassagebangkok.club/') {
+    //       item.priority = 1.0;
           item.changefreq = 'daily';
         }
         // Individual listing pages
