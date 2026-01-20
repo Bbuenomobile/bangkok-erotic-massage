@@ -1,6 +1,4 @@
 // src/lib/safeFetch.ts
-import { getMockListingsForCategory } from './mockData';
-
 export async function safeFetch(url: string): Promise<any[]> {
     try {
         console.log('[safeFetch] Fetching:', url);
@@ -21,34 +19,19 @@ export async function safeFetch(url: string): Promise<any[]> {
             }
         });
         if (!res.ok) {
-            console.error('[safeFetch] API error: ' + res.status + ', falling back to mock data');
-            // Extract category and limit from URL for mock data
-            const urlObj = new URL(url);
-            const category = urlObj.searchParams.get('category') || 'erotic-massage';
-            const limit = parseInt(urlObj.searchParams.get('limit') || '50');
-            return getMockListingsForCategory(category, limit);
+            console.error('[safeFetch] API error:', res.status, res.statusText);
+            return [];
         }
         const ct = res.headers.get('content-type') || '';
         if (!ct.includes('application/json')) {
-            console.error('[safeFetch] Not JSON: ' + ct + ', falling back to mock data');
-            const urlObj = new URL(url);
-            const category = urlObj.searchParams.get('category') || 'erotic-massage';
-            const limit = parseInt(urlObj.searchParams.get('limit') || '50');
-            return getMockListingsForCategory(category, limit);
+            console.error('[safeFetch] Not JSON:', ct);
+            return [];
         }
         const data = await res.json();
+        console.log('[safeFetch] Success! Retrieved', data.data?.length || 0, 'listings');
         return data.data || [];
     } catch (e) {
-        console.error('[safeFetch] Fetch failed:', e, ', falling back to mock data');
-        // Extract category and limit from URL for mock data
-        try {
-            const urlObj = new URL(url);
-            const category = urlObj.searchParams.get('category') || 'erotic-massage';
-            const limit = parseInt(urlObj.searchParams.get('limit') || '50');
-            return getMockListingsForCategory(category, limit);
-        } catch (urlError) {
-            console.error('[safeFetch] URL parsing failed:', urlError);
-            return getMockListingsForCategory('erotic-massage', 50);
-        }
+        console.error('[safeFetch] Fetch failed:', e);
+        return [];
     }
 }
