@@ -4,22 +4,9 @@ import ListingCard from '../components/ListingCard.astro';
 import CategoryNav from '../components/CategoryNav.astro';
 import InternalLinks from '../components/InternalLinks.astro';
 import OwnerCTA from '../components/OwnerCTA.astro';
+import { safeFetch } from '../lib/safeFetch';
 
 // Safe fetch helper for fake category pages
-async function safeFetch(url: string): Promise<any[]> {
-    try {
-        console.log('[fakeCat] Fetching:', url);
-        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        if (!res.ok) return [];
-        const ct = res.headers.get('content-type') || '';
-        if (!ct.includes('application/json')) return [];
-        const data = await res.json();
-        return data.data || [];
-    } catch (e) {
-        console.error('[fakeCat] Fetch failed:', e);
-        return [];
-    }
-}
 
 // Fetch listings for this specific fake category
 const apiUrl = 'https://www.erotikmaps.com/api/v1/satellite/listings?city=bangkok&category=happy-ending-massage&limit=50';

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://eroticmassagebangkok.club/sitemap-index.xml

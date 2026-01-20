@@ -1,28 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import ListingCard from '../components/ListingCard.astro';
+import { safeFetch } from '../lib/safeFetch';
 
 // Safe fetch helper
-async function safeFetch(url: string): Promise<any[]> {
-    try {
-        console.log('[getStaticPaths] Fetching:', url);
-        const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        if (!res.ok) {
-            console.error('[getStaticPaths] API error: ' + res.status);
-            return [];
-        }
-        const ct = res.headers.get('content-type') || '';
-        if (!ct.includes('application/json')) {
-            console.error('[getStaticPaths] Not JSON: ' + ct);
-            return [];
-        }
-        const data = await res.json();
-        return data.data || [];
-    } catch (e) {
-        console.error('[getStaticPaths] Fetch failed:', e);
-        return [];
-    }
-}
 
 export async function getStaticPaths() {
     const apiUrl = 'https://www.erotikmaps.com/api/v1/satellite/listings?city=bangkok&category=erotic-massage&limit=100';

@@ -1,0 +1,16 @@
+{
+    "name": "Bangkok Erotic massage",
+    "short_name": "Bangkok Erotic Massage \ud83c\udf0d",
+    "description": "Discover the ultimate erotic massage Bangkok experience with our 12 verified venues. Indulge in sensual Thai techniques amid Bangkok's steamy nights. Book your session now for pure bliss!",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#e91e63",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}
